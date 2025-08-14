@@ -1,4 +1,4 @@
-# 🛡️ Projeto Base de Autenticação (Angular + Node + Prisma + MySQL)
+# 🛡️ Projeto Base de Autenticação (Angular + Node + Prisma + MySQL + CSS)
 
 Este é um **projeto base** para autenticação de usuários com **login**, **registro** e **logout**, pronto para ser reutilizado em outros sistemas.  
 Inclui **frontend em Angular standalone** e **backend em Node.js com Prisma ORM e MySQL**, utilizando **JWT** para autenticação.
@@ -8,7 +8,7 @@ Inclui **frontend em Angular standalone** e **backend em Node.js com Prisma ORM 
 ---
 
 ## 📂 Estrutura do Projeto
-/frontend → Aplicação Angular Standalone
+/frontend → Aplicação Angular Standalone + CSS
 /backend → API Node.js com Prisma + MySQL
 
 ## 🚀 Funcionalidades
