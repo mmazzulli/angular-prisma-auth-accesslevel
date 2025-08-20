@@ -55,7 +55,6 @@ JWT_SECRET=sua_chave_secreta_aqui
 Rodar as migrations e iniciar:
 
 npx prisma migrate dev --name init
-npm start
 
 
 O backend estará em: http://localhost:3000
