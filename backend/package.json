@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
- "type": "module",
-"scripts": {
-  "dev": "node src/server.js"
-},
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
