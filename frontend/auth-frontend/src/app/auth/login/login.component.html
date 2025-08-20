@@ -1,0 +1,28 @@
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1>Entrar</h1>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label>
+        E-mail
+        <input type="email" formControlName="email" placeholder="voce@email.com" />
+      </label>
+      <div class="error" *ngIf="f.email.touched && f.email.errors?.['required']">E-mail é obrigatório.</div>
+      <div class="error" *ngIf="f.email.touched && f.email.errors?.['email']">Formato de e-mail inválido.</div>
+
+      <label>
+        Senha
+        <input type="password" formControlName="password" placeholder="Sua senha" />
+      </label>
+      <div class="error" *ngIf="f.password.touched && f.password.errors?.['required']">Senha é obrigatória.</div>
+
+      <button type="submit" [disabled]="loading">Entrar</button>
+      <div class="api-error" *ngIf="apiError">{{ apiError }}</div>
+    </form>
+
+    <p class="alt">
+      Não tem conta?
+      <a routerLink="/register">Criar conta</a>
+    </p>
+  </div>
+</div>

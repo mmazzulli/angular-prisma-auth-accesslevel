@@ -1,0 +1,24 @@
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1>Criar conta</h1>
+
+   <form [formGroup]="form" (ngSubmit)="submit()">
+  <input type="text" formControlName="name" placeholder="Nome" />
+  <input type="email" formControlName="email" placeholder="Email" />
+  <input type="password" formControlName="password" placeholder="Senha" />
+  <select formControlName="role">
+    <option value="empresa">Empresa</option>
+    <option value="funcionarios">Funcionários</option>
+    <option value="clientes">Clientes</option>
+  </select>
+  <button type="submit" [disabled]="loading">Registrar</button>
+  <p *ngIf="apiError">{{ apiError }}</p>
+</form>
+
+
+    <p class="alt">
+      Já tem conta?
+      <a routerLink="/login">Entrar</a>
+    </p>
+  </div>
+</div>
