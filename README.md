@@ -1,183 +1,100 @@
-# 🛡️ Projeto Base de Autenticação (Angular + Node + Prisma + MySQL + CSS)
+🔐 Angular + Node + Prisma Auth App
 
-Este é um **projeto base** para autenticação de usuários com **login**, **registro** e **logout**, pronto para ser reutilizado em outros sistemas.  
-Inclui **frontend em Angular standalone** e **backend em Node.js com Prisma ORM e MySQL**, utilizando **JWT** para autenticação.
+Aplicação de autenticação e autorização com Angular (frontend) e Node.js/Express + Prisma (backend), incluindo JWT para autenticação e AuthGuard no Angular para proteger rotas baseadas em diferentes roles de usuário.
 
-> 📌 Este projeto está funcional até a etapa de login/registro/logout. Ainda **não** inclui AuthGuard ou proteção de rotas no Angular.
+✨ Funcionalidades
 
----
+Registro e login de usuários com senha criptografada (bcrypt).
 
-## 📂 Estrutura do Projeto
-/frontend → Aplicação Angular Standalone + CSS
-/backend → API Node.js com Prisma + MySQL
+Geração de JWT para autenticação.
 
-## 🚀 Funcionalidades
+Diferentes papéis de usuário. 
 
-- Registro de novos usuários
-- Login com JWT
-- Logout
-- Validação no frontend e backend
-- Integração completa Angular ↔ Node
-- MySQL com Prisma ORM
+Proteção de rotas no frontend com AuthGuard.
 
----
+Redirecionamento automático do usuário para o dashboard correspondente ao seu papel.
 
-## 🖥️ Tecnologias Utilizadas
+Estrutura pronta para expansão.
 
-**Frontend**
-- Angular Standalone
-- Reactive Forms
-- TailwindCSS (opcional para estilização)
-- HTTPClient
+🛠️ Tecnologias utilizadas
+Backend
 
-**Backend**
-- Node.js
-- Express.js
-- Prisma ORM
-- MySQL
-- JWT (Json Web Token)
-- bcrypt (hash de senha)
+Node.js + Express
 
----
+Prisma ORM (SQLite ou outro banco configurável)
 
-## 📦 Como Rodar Localmente
+JWT (jsonwebtoken)
 
-### 1️⃣ Pré-requisitos
-- Node.js >= 18
-- Angular CLI instalado globalmente
-- MySQL rodando (pode usar XAMPP, WAMP, MAMP ou similar)
-- Git
+Bcrypt.js
 
----
+Frontend
 
-### 2️⃣ Clonar o repositório
+Angular 17+ (Standalone Components + Routing)
 
-git clone https://github.com/seu-usuario/seu-repo.git
-cd seu-repo
-3️⃣ Configurar o Backend
-bash
-Copiar
-Editar
-cd backend
+Reactive Forms
+
+AuthGuard com base em roles
+
+🚀 Como rodar o projeto
+1. Clonar o repositório
+git clone https://github.com/seu-usuario/nome-do-repo.git
+cd nome-do-repo
+
+2. Configurar o backend
+cd src
 npm install
-Crie o arquivo .env com o conteúdo:
 
-env
-Copiar
-Editar
-DATABASE_URL="mysql://root:senha@localhost:3306/nome_do_banco"
-JWT_SECRET="uma_chave_secreta_segura"
+
+Crie um arquivo .env na raiz do backend:
+
 PORT=3000
-Inicialize o Prisma:
+DATABASE_URL="file:./dev.db"
+JWT_SECRET=sua_chave_secreta_aqui
 
-bash
-Copiar
-Editar
+
+Rodar as migrations e iniciar:
+
 npx prisma migrate dev --name init
-npx prisma generate
-Inicie o servidor:
+npm start
 
-bash
-Copiar
-Editar
-npm run dev
-O backend estará disponível em:
-http://localhost:3000
 
-4️⃣ Configurar o Frontend
-bash
-Copiar
-Editar
-cd ../frontend
+O backend estará em: http://localhost:3000
+
+3. Configurar o frontend
+cd frontend
 npm install
-Atualize a URL do backend no serviço AuthService (se necessário):
-
-ts
-Copiar
-Editar
-private apiUrl = 'http://localhost:3000';
-Inicie o servidor Angular:
-
-bash
-Copiar
-Editar
 ng serve
-Acesse:
-http://localhost:4200
 
-🐳 Rodando com Docker
-Essa configuração permite subir backend, frontend e banco de dados MySQL usando Docker Compose.
 
-1️⃣ Pré-requisitos
-Docker instalado
+O frontend estará em: http://localhost:4200
 
-Docker Compose instalado
+📂 Estrutura das rotas
+Backend (/api/auth)
 
-2️⃣ Estrutura esperada
-Crie um arquivo docker-compose.yml na raiz do projeto:
 
-yaml
-Copiar
-Editar
-version: '3.8'
+Frontend (Angular)
 
-services:
-  mysql:
-    image: mysql:8
-    container_name: mysql_auth
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: auth_db
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
+/home → Página inicial
 
-  backend:
-    build: ./backend
-    container_name: backend_auth
-    restart: always
-    environment:
-      DATABASE_URL: mysql://root:root@mysql:3306/auth_db
-      JWT_SECRET: uma_chave_secreta_segura
-      PORT: 3000
-    depends_on:
-      - mysql
-    ports:
-      - "3000:3000"
+/login → Login
 
-  frontend:
-    build: ./frontend
-    container_name: frontend_auth
-    restart: always
-    ports:
-      - "4200:80"
-    depends_on:
-      - backend
+/register → Registro
 
-volumes:
-  mysql_data:
-3️⃣ Subir tudo com um comando
-bash
-Copiar
-Editar
-docker-compose up --build
-4️⃣ Acessos
-Frontend: http://localhost:4200
+/superadmin → Dashboard SuperAdmin
 
-Backend: http://localhost:3000
+/empresa → Dashboard Empresa
 
-MySQL: porta 3306
+/funcionarios → Dashboard Funcionários
 
-📌 Como Reutilizar este Projeto
-Clone este repositório como base para um novo projeto
+/clientes → Dashboard Clientes
 
-Renomeie as pastas e ajuste as variáveis no .env
+🧪 Como testar
 
-Adicione suas páginas e funcionalidades
+Registre um usuário (/register) escolhendo um papel.
 
-Mantenha a estrutura de autenticação para reaproveitar o login/registro/logout sem alterações
+Faça login (/login) e copie o token JWT.
 
-📝 Licença
-FREE for Students
+No frontend, após login, você será redirecionado para o dashboard do seu papel.
+
+Teste acessar rotas protegidas → se o papel não tiver permissão, acesso negado.
+
