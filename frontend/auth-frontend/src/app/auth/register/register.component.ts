@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { Role } from '../roles';
 
 @Component({
   selector: 'app-register',
@@ -21,12 +22,11 @@ export class RegisterComponent {
   loading = false;
   apiError = '';
 
-  // Formulário tipado
   form!: FormGroup<{
     name: FormControl<string>;
     email: FormControl<string>;
     password: FormControl<string>;
-    role: FormControl<'superadmin' | 'empresa' | 'funcionarios' | 'clientes'>;
+    role: FormControl<Role>;
   }>;
 
   constructor(
@@ -34,46 +34,38 @@ export class RegisterComponent {
     private auth: AuthService,
     private router: Router
   ) {
-    // Inicializa o form corretamente
     this.form = this.fb.nonNullable.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
-      role: ['clientes', Validators.required] // valor padrão
+      role: ['cliente', Validators.required] // padrão singular
     }) as FormGroup<{
       name: FormControl<string>;
       email: FormControl<string>;
       password: FormControl<string>;
-      role: FormControl<'superadmin' | 'empresa' | 'funcionarios' | 'clientes'>;
+      role: FormControl<Role>;
     }>;
   }
 
-  // ✅ getter correto dentro da classe
   get f() {
     return this.form.controls;
   }
 
   submit() {
     this.apiError = '';
-
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.loading = true;
-
     const { name, email, password, role } = this.form.getRawValue();
 
     this.auth.register(name, email, password, role).subscribe({
       next: res => {
-        // Salva o token retornado pelo backend
         this.auth.saveToken(res.token);
-
-        // Pega o role direto do JWT
         const userRole = this.auth.getRole();
 
-        // Redireciona conforme o role
         switch (userRole) {
           case 'superadmin':
             this.router.navigate(['/superadmin']);
@@ -81,10 +73,10 @@ export class RegisterComponent {
           case 'empresa':
             this.router.navigate(['/empresa']);
             break;
-          case 'funcionarios':
+          case 'funcionario':
             this.router.navigate(['/funcionarios']);
             break;
-          case 'clientes':
+          case 'cliente':
             this.router.navigate(['/clientes']);
             break;
           default:

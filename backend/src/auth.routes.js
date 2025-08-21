@@ -1,42 +1,32 @@
-import express from 'express';
+// import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { authenticateToken, authorizeRoles } from './auth.middleware.js';
 
-const router = express.Router();
+import { Router } from 'express';
+// import { prisma } from './prisma.js'; 
+
+const router = Router();
+
+
+// const router = express.Router();
 const prisma = new PrismaClient();
 
+
+// ======================
 // Função para gerar token JWT
+// ======================
 function generateToken(user) {
   return jwt.sign(
-    { id: user.id, role: user.role },
+    { id: user.id, role: user.role.toLowerCase() },
     process.env.JWT_SECRET,
     { expiresIn: '1d' }
   );
 }
 
-// Middleware de autorização por roles
-export function authorizeRoles(...roles) {
-  return (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: 'Não autorizado' });
-
-    const token = authHeader.split(' ')[1];
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (!roles.includes(decoded.role)) {
-        return res.status(403).json({ error: 'Acesso negado para seu papel' });
-      }
-      req.user = decoded;
-      next();
-    } catch (err) {
-      return res.status(401).json({ error: 'Token inválido' });
-    }
-  };
-}
-
 // ======================
-// Rota de registro
+// Registro
 // ======================
 router.post('/register', async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -50,13 +40,11 @@ router.post('/register', async (req, res) => {
     if (existingUser) return res.status(400).json({ error: 'Usuário já existe' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Garante que o role seja válido
-    const validRoles = ['superadmin', 'empresa', 'funcionarios', 'clientes'];
-    const userRole = validRoles.includes(role) ? role : 'clientes';
+    const validRoles = ['superadmin', 'empresa', 'funcionario', 'cliente'];
+    const userRole = validRoles.includes(role?.toLowerCase()) ? role.toLowerCase() : 'cliente';
 
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, role: userRole },
+      data: { name, email, password: hashedPassword, role: userRole }
     });
 
     const token = generateToken(user);
@@ -68,14 +56,11 @@ router.post('/register', async (req, res) => {
 });
 
 // ======================
-// Rota de login
+// Login
 // ======================
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-  }
+  if (!email || !password) return res.status(400).json({ error: 'Email e senha obrigatórios' });
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
@@ -93,38 +78,92 @@ router.post('/login', async (req, res) => {
 });
 
 // ======================
-// Rotas protegidas
+// Rotas protegidas por role
 // ======================
 
-// Dashboard do SuperAdmin
-router.get('/dashboard-superadmin',
+
+// ----------------------
+// Superadmin
+// Acessa todos os dashboards, visto apenas por ele mesmo
+// ----------------------
+router.get(
+  '/superadmin',
+  authenticateToken,
   authorizeRoles('superadmin'),
-  (req, res) => {
-    res.json({ message: 'Bem-vindo, SuperAdmin!' });
+  async (req, res) => {
+    try {
+      const users = await prisma.user.findMany(); // todos os usuários
+      res.json({ message: 'Bem-vindo, Superadmin!', users });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Erro ao buscar dados' });
+    }
   }
 );
 
-// Dashboard da Empresa
-router.get('/dashboard-empresa',
-  authorizeRoles('empresa'),
-  (req, res) => {
-    res.json({ message: 'Bem-vindo, Empresa!' });
+// ----------------------
+// Empresa
+// Acessa: empresa (ela mesma), todos funcionários e clientes
+// Visto por: superadmin
+// ----------------------
+router.get(
+  '/empresa',
+  authenticateToken,
+  authorizeRoles('superadmin', 'empresa'),
+  async (req, res) => {
+    try {
+      const users = await prisma.user.findMany({
+        where: { role: { in: ['empresa', 'funcionario', 'cliente'] } },
+      });
+      res.json({ message: 'Bem-vindo, Empresa!', users });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Erro ao buscar dados' });
+    }
   }
 );
 
-// Dashboard de Funcionários
-router.get('/dashboard-funcionarios',
-  authorizeRoles('funcionarios'),
-  (req, res) => {
-    res.json({ message: 'Bem-vindo, Funcionários!' });
+// ----------------------
+// Funcionário
+// Acessa: ele mesmo + todos clientes
+// Visto por: superadmin + empresa
+// ----------------------
+router.get(
+  '/funcionario',
+  authenticateToken,
+  authorizeRoles('superadmin', 'empresa', 'funcionario'),
+  async (req, res) => {
+    try {
+      const users = await prisma.user.findMany({
+        where: { role: { in: ['funcionario', 'cliente'] } },
+      });
+      res.json({ message: 'Bem-vindo, Funcionário!', users });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Erro ao buscar dados' });
+    }
   }
 );
 
-// Dashboard de Clientes
-router.get('/dashboard-clientes',
-  authorizeRoles('clientes'),
-  (req, res) => {
-    res.json({ message: 'Bem-vindo, Clientes!' });
+// ----------------------
+// Cliente
+// Acessa: ele mesmo
+// Visto por: superadmin + empresa + funcionario
+// ----------------------
+router.get(
+  '/cliente',
+  authenticateToken,
+  authorizeRoles('superadmin', 'empresa', 'funcionario', 'cliente'),
+  async (req, res) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+      });
+      res.json({ message: 'Bem-vindo, Cliente!', user });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Erro ao buscar dados' });
+    }
   }
 );
 

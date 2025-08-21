@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { Role } from '../roles';
 
 @Component({
   selector: 'app-login',
@@ -21,7 +22,6 @@ export class LoginComponent {
   loading = false;
   apiError = '';
 
-  // Formulário tipado
   form!: FormGroup<{
     email: FormControl<string>;
     password: FormControl<string>;
@@ -32,7 +32,6 @@ export class LoginComponent {
     private auth: AuthService,
     private router: Router
   ) {
-    // Inicializa o form
     this.form = this.fb.nonNullable.group({
       email: this.fb.nonNullable.control('', [Validators.required, Validators.email]),
       password: this.fb.nonNullable.control('', [Validators.required]),
@@ -43,25 +42,19 @@ export class LoginComponent {
 
   submit() {
     this.apiError = '';
-
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.loading = true;
-
     const { email, password } = this.form.getRawValue();
 
     this.auth.login(email, password).subscribe({
       next: res => {
-        // Salva o token retornado pelo backend
         this.auth.saveToken(res.token);
-
-        // Pega o role direto do token
         const role = this.auth.getRole();
 
-        // Redireciona conforme o role
         switch (role) {
           case 'superadmin':
             this.router.navigate(['/superadmin']);
@@ -69,10 +62,10 @@ export class LoginComponent {
           case 'empresa':
             this.router.navigate(['/empresa']);
             break;
-          case 'funcionarios':
+          case 'funcionario':
             this.router.navigate(['/funcionarios']);
             break;
-          case 'clientes':
+          case 'cliente':
             this.router.navigate(['/clientes']);
             break;
           default:

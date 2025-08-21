@@ -16,8 +16,8 @@ datasource db {
 enum Role {
   superadmin
   empresa
-  funcionarios
-  clientes
+  funcionario
+  cliente
 }
 
 model User {
@@ -25,7 +25,7 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      Role     @default(clientes)
+  role      Role     @default(cliente)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
